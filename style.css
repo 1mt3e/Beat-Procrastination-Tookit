@@ -475,34 +475,7 @@ textarea { resize: none; overflow-y: hidden; }
   50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
 }
 
-/* ── View Transitions API ── */
-.tab.active::after {
-  transform: scaleX(1);
-  view-transition-name: active-tab-line;
-}
-.panel.active {
-  view-transition-name: active-panel;
-}
-
-::view-transition-old(active-panel) {
-  animation: 180ms var(--ease-out-quart) both fadeOut;
-}
-::view-transition-new(active-panel) {
-  animation: 320ms var(--ease-out-quart) both fadeInSlide;
-}
-::view-transition-group(active-tab-line) {
-  animation-duration: 320ms;
-  animation-timing-function: var(--ease-out-quart);
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); filter: blur(0); }
-  to { opacity: 0; transform: translateY(-8px); filter: blur(1.5px); }
-}
-@keyframes fadeInSlide {
-  from { opacity: 0; transform: translateY(12px); filter: blur(1.5px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
+/* ── View Transitions API (Removed for cross-browser stability) ── */
 
 /* ── Collapsible History Section ── */
 .history-content {

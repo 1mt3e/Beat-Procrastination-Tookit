@@ -56,10 +56,6 @@ function switchTab(i) {
     checkNotifications();
   };
 
-  if (document.startViewTransition && !pm()) {
-    document.startViewTransition(() => updateTabs()); return;
-  }
-
   document.querySelectorAll('.tab').forEach((t, idx) => t.classList.toggle('active', idx === i));
   if (pm()) {
     if (activePanel) activePanel.classList.remove('active');
@@ -87,11 +83,19 @@ function showPanel(panel, i, instant) {
   if (i === 3) renderChallenge();
   if (i === 5) renderReflection();
   if (instant) return;
-  panel.style.opacity = '0'; panel.style.transform = 'translateY(10px) scale(0.995)'; panel.style.filter = 'blur(2px)'; panel.style.transition = 'none';
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    panel.style.transition = 'opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out), filter 0.35s var(--ease-out)';
-    panel.style.opacity = '1'; panel.style.transform = 'translateY(0) scale(1)'; panel.style.filter = 'blur(0)';
-  }));
+  
+  panel.style.opacity = '0'; 
+  panel.style.transform = 'translateY(10px) scale(0.995)'; 
+  panel.style.filter = 'blur(2px)'; 
+  panel.style.transition = 'none';
+  
+  // Force reflow for reliable cross-browser transition
+  void panel.offsetWidth;
+  
+  panel.style.transition = 'opacity 0.35s var(--ease-out), transform 0.35s var(--ease-out), filter 0.35s var(--ease-out)';
+  panel.style.opacity = '1'; 
+  panel.style.transform = 'translateY(0) scale(1)'; 
+  panel.style.filter = 'blur(0)';
 }
 
 const days = ['Mon','Tue','Wed','Thu','Fri'], dayColors = ['#3B82F6','#16A34A','#D97706','#DC2626','#7C3AED'];
@@ -263,9 +267,13 @@ function animateCount(id, target) {
   const el = document.getElementById(id), start = parseFloat(el.textContent) || 0;
   if (start === target) return;
   if (pm()) { el.textContent = id === 'stat-hours' ? target.toFixed(1) : Math.round(target); return; }
-  const duration = 350, startTime = performance.now();
+  const duration = 350;
+  let startTimestamp = null;
   requestAnimationFrame(function update(now) {
-    const elapsed = now - startTime, t = Math.min(elapsed / duration, 1), ease = 1 - Math.pow(1 - t, 4);
+    if (!startTimestamp) startTimestamp = now;
+    const elapsed = now - startTimestamp;
+    const t = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 4);
     el.textContent = id === 'stat-hours' ? (start + ease * (target - start)).toFixed(1) : Math.round(start + ease * (target - start));
     if (t < 1) requestAnimationFrame(update);
   });
