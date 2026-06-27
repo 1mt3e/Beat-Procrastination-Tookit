@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Beat Procrastination Toolkit — a productivity web app for university students to plan, track, focus, and reflect.">
+  <title>Beat Procrastination Toolkit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="style_v1.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-row">
+      <h1>Beat Procrastination Toolkit</h1>
+      <div class="header-actions">
+        <button class="timer-chip" id="header-timer-chip" onclick="switchTab(2)" aria-label="Go to active timer">
+          <span class="timer-chip-dot"></span>
+          <span class="timer-chip-text" id="header-timer-text">25:00</span>
+        </button>
+        <button class="icon-btn theme-toggle" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle dark mode">
+          <i class="ti ti-sun icon-sun"></i>
+          <i class="ti ti-moon icon-moon"></i>
+        </button>
+        
+        <div class="popover-wrapper">
+          <button class="icon-btn" id="btn-notifications" onclick="toggleNotifications()" aria-label="Notifications">
+            <i class="ti ti-bell"></i>
+            <span class="notification-badge" id="notification-badge" style="display:none;"></span>
+          </button>
+          <div class="header-popover" id="popover-notifications">
+            <h4 class="popover-title">Notifications</h4>
+            <div class="popover-content" id="notifications-list"></div>
+          </div>
+        </div>
+
+        <div class="popover-wrapper">
+          <button class="icon-btn" id="btn-profile" onclick="toggleProfile()" aria-label="Profile">
+            <i class="ti ti-user-circle"></i>
+          </button>
+          <div class="header-popover" id="popover-profile">
+            <h4 class="popover-title">Student Profile</h4>
+            <div class="popover-content">
+              <div class="profile-input-group">
+                <label for="profile-name-input">Student Name</label>
+                <input type="text" id="profile-name-input" placeholder="Enter name..." onchange="saveProfileSettings()">
+              </div>
+              <div class="profile-input-group" style="margin-top:0.75rem">
+                <label for="profile-target-input">Weekly Target Hours</label>
+                <input type="number" id="profile-target-input" placeholder="Hours..." min="1" step="1" onchange="saveProfileSettings()">
+              </div>
+              <div class="profile-divider"></div>
+              <div class="profile-stats-summary">
+                <div class="profile-progress-label">
+                  <span>Weekly Progress</span>
+                  <span id="profile-progress-pct">0%</span>
+                </div>
+                <div class="progress-track" style="margin: 0.5rem 0 0.75rem 0;">
+                  <div class="progress-fill" id="profile-progress-fill" style="width: 0%"></div>
+                </div>
+                <div id="profile-hours-done" style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;">
+                  Logged: 0.0 hrs / 15 hrs
+                </div>
+              </div>
+              <div class="profile-divider"></div>
+              <div class="profile-achievements">
+                <label>Unlocked Badges</label>
+                <div class="badge-row" id="profile-badges"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="tab-bar" role="tablist">
+      <button class="tab active" role="tab" onclick="switchTab(0)">Weekly Planner</button>
+      <button class="tab" role="tab" onclick="switchTab(1)">Daily Tracker</button>
+      <button class="tab" role="tab" onclick="switchTab(2)">Pomodoro</button>
+      <button class="tab" role="tab" onclick="switchTab(3)">7-Day Challenge</button>
+      <button class="tab" role="tab" onclick="switchTab(4)">AI Smart Card</button>
+      <button class="tab" role="tab" onclick="switchTab(5)">Reflection</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Panel 0: Weekly Planner -->
+    <section class="panel active" id="panel-0">
+      <div class="section-header">
+        <h2 class="section-title">Weekly Focus</h2>
+        <p class="section-desc">Structure your academic week to minimize cognitive load.</p>
+      </div>
+      <div class="planner-grid" id="planner-grid"></div>
+      <div class="planner-actions">
+        <button class="btn btn-danger" onclick="clearPlanner()"><i class="ti ti-trash"></i> Reset</button>
+        <button class="btn btn-primary" onclick="savePlanner()"><i class="ti ti-device-floppy"></i> Save Plan</button>
+      </div>
+    </section>
+
+    <!-- Panel 1: Daily Tracker -->
+    <section class="panel" id="panel-1">
+      <div class="section-header">
+        <h2 class="section-title">Daily Tracker</h2>
+        <p class="section-desc">Log your study hours, energy, and mood each day.</p>
+      </div>
+      <div class="tracker-grid">
+        <div class="card">
+          <h3 class="card-title"><i class="ti ti-book"></i> Study Log</h3>
+          <div id="study-rows"></div>
+          <button class="btn btn-outline" onclick="addStudyRow()" style="margin-top:1rem"><i class="ti ti-plus"></i> Add Subject</button>
+        </div>
+        <div class="card">
+          <h3 class="card-title"><i class="ti ti-bolt"></i> Daily Check-in</h3>
+          <label class="reflection-label" style="font-size:0.85rem">Energy Level</label>
+          <div class="energy-dots" id="energy-dots"></div>
+          <span class="energy-label" id="energy-label">Moderate</span>
+          <label class="reflection-label" style="margin-top:1.25rem; font-size:0.85rem">Current Mood</label>
+          <div class="mood-selectors" id="mood-selectors"></div>
+        </div>
+      </div>
+      <div class="tracker-footer">
+        <div class="stats-row">
+          <div class="stat-box"><span class="stat-label">Hours Logged</span><div class="stat-val" id="stat-hours">0.0</div></div>
+          <div class="stat-box"><span class="stat-label">Subjects</span><div class="stat-val" id="stat-subjects">0</div></div>
+          <div class="stat-box"><span class="stat-label">Day Streak 🔥</span><div class="stat-val" id="stat-streak">0</div></div>
+        </div>
+        <div class="planner-actions">
+          <button class="btn btn-primary" onclick="saveTracker()"><i class="ti ti-device-floppy"></i> Save Tracker</button>
+        </div>
+      </div>
+      <!-- Study History Section -->
+      <div class="card" id="history-card" style="margin-top: 2rem;">
+        <h3 class="card-title" onclick="toggleHistoryCollapse()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0;">
+          <span><i class="ti ti-history"></i> Study History</span>
+          <i class="ti ti-chevron-down" id="history-chevron" style="transition: transform 0.3s var(--ease-out-quart);"></i>
+        </h3>
+        <div id="history-content" class="history-content collapsed">
+          <div class="chart-wrapper" id="history-chart-wrapper" style="margin-bottom: 1.5rem; display:none;">
+            <label class="reflection-label" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); text-align:left; display:block; margin-bottom:0.25rem;">Last 7 Days Study Trend</label>
+            <div class="bar-chart" id="history-bar-chart"></div>
+          </div>
+          <div id="history-list" class="history-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 2: Pomodoro -->
+    <section class="panel" id="panel-2">
+      <div class="section-header">
+        <h2 class="section-title">Focus Timer</h2>
+        <p class="section-desc">Use the Pomodoro technique to stay in deep work.</p>
+      </div>
+      <div class="timer-layout">
+        <div class="card timer-center">
+          <div class="pomodoro-circle" id="timer-circle">
+            <svg class="timer-svg" width="180" height="180">
+              <circle class="timer-svg-bg" cx="90" cy="90" r="82"></circle>
+              <circle class="timer-svg-fill" id="timer-progress" cx="90" cy="90" r="82"></circle>
+            </svg>
+            <div class="timer-text-container">
+              <span class="timer-time" id="timer-display">25:00</span>
+              <span class="timer-label-text" id="timer-label">Work Session</span>
+            </div>
+          </div>
+          <div class="session-dots" id="session-dots"></div>
+          <div class="timer-modes" style="align-items:center;">
+            <button class="btn btn-outline" onclick="setTimerPreset(25,'work')" style="font-size:0.8rem;padding:0.5rem 0.75rem">25m Work</button>
+            <button class="btn btn-outline" onclick="setTimerPreset(5,'short')" style="font-size:0.8rem;padding:0.5rem 0.75rem">5m Break</button>
+            <button class="btn btn-outline" onclick="setTimerPreset(15,'long')" style="font-size:0.8rem;padding:0.5rem 0.75rem">15m Break</button>
+            <button class="icon-btn" id="btn-timer-mute" onclick="toggleMute()" aria-label="Mute sound" style="width: 38px; height: 38px; margin-left: 0.25rem;">
+              <i class="ti ti-volume"></i>
+            </button>
+          </div>
+          <div class="custom-timer-presets">
+            <div style="flex:1; display:flex; flex-direction:column; gap:0.25rem; text-align:left;">
+              <label style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; font-weight:600; letter-spacing:0.02em;">Work (Min)</label>
+              <input type="number" id="custom-work-min" value="25" min="1" max="180" onchange="applyCustomTimer()">
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:0.25rem; text-align:left;">
+              <label style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; font-weight:600; letter-spacing:0.02em;">Break (Min)</label>
+              <input type="number" id="custom-break-min" value="5" min="1" max="60" onchange="applyCustomTimer()">
+            </div>
+          </div>
+          <div class="timer-task-container">
+            <label class="profile-input-group label" style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); text-align:left; display:block; margin-bottom:0.25rem;">Focus Task</label>
+            <select id="timer-task-select" onchange="handleTaskSelectChange()"></select>
+            <input type="text" id="timer-task" placeholder="Or enter custom task..." style="margin-top:0.5rem; display:none;">
+          </div>
+          <div class="timer-controls">
+            <button class="btn btn-primary" id="btn-timer-toggle" onclick="toggleTimer()"><i class="ti ti-player-play"></i> Start</button>
+            <button class="btn btn-outline" onclick="resetTimer()"><i class="ti ti-refresh"></i> Reset</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title"><i class="ti ti-info-circle"></i> How it works</h3>
+          <div class="how-it-works-grid">
+            <div class="step-box"><div class="step-emoji">🎯</div><p class="step-text">Pick a task and type it in</p></div>
+            <div class="step-box"><div class="step-emoji">⏱️</div><p class="step-text">Work for 25 minutes</p></div>
+            <div class="step-box"><div class="step-emoji">☕</div><p class="step-text">Take a 5-minute break</p></div>
+            <div class="step-box"><div class="step-emoji">🔄</div><p class="step-text">Repeat four times</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel 3: 7-Day Challenge -->
+    <section class="panel" id="panel-3">
+      <div class="section-header">
+        <h2 class="section-title">7-Day Challenge</h2>
+        <p class="section-desc">Build better habits one day at a time.</p>
+      </div>
+      <div class="challenge-grid" id="challenge-grid"></div>
+      <div class="progress-container" style="margin-top:1.5rem">
+        <div class="progress-track"><div class="progress-fill" id="challenge-progress-fill"></div></div>
+        <div class="progress-text"><span id="challenge-progress-desc">0 of 7 days completed</span><span id="challenge-progress-percent">0%</span></div>
+      </div>
+      <div id="challenge-detail-panel" class="detail-panel"></div>
+    </section>
+
+    <!-- Panel 4: AI Smart Card -->
+    <section class="panel" id="panel-4">
+      <div class="section-header">
+        <h2 class="section-title">AI Smart Card</h2>
+        <p class="section-desc">Learn to use AI as a tool, not a shortcut.</p>
+      </div>
+      <div class="ai-grid">
+        <div class="ai-col ai-use">
+          <h3 class="ai-col-title" style="color:var(--green)"><i class="ti ti-circle-check"></i> Use AI to...</h3>
+          <ul class="ai-list" id="ai-use-list"></ul>
+        </div>
+        <div class="ai-col ai-dont">
+          <h3 class="ai-col-title" style="color:var(--red)"><i class="ti ti-circle-x"></i> Don't use AI to...</h3>
+          <ul class="ai-list" id="ai-dont-list"></ul>
+        </div>
+      </div>
+      <div class="golden-rule">
+        <i class="ti ti-award"></i>
+        <p><strong>Golden rule:</strong> Use AI to scaffold and accelerate your learning journey, not to replace the essential hard work of thinking, reading, and writing yourself.</p>
+      </div>
+      <div class="tools-section">
+        <p class="tools-label"><i class="ti ti-apps"></i> Recommended Tools</p>
+        <div class="tool-chips" id="recommended-tools"></div>
+        <p class="card-subtitle" style="margin-top:0.5rem; font-size:0.8rem">These academic assistants can explain concepts, check logic, or find peer-reviewed materials.</p>
+      </div>
+    </section>
+
+    <!-- Panel 5: Reflection -->
+    <section class="panel" id="panel-5">
+      <div class="section-header">
+        <h2 class="section-title">Reflection Journal</h2>
+        <p class="section-desc">Answer honestly — this is for your own growth, not for grading.</p>
+      </div>
+      <div class="card">
+        <div id="reflection-blocks"></div>
+        <div class="reflection-actions">
+          <button class="btn btn-danger" onclick="clearReflection()"><i class="ti ti-trash"></i> Reset</button>
+          <button class="btn btn-primary" onclick="saveReflection()"><i class="ti ti-device-floppy"></i> Save</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand" style="white-space: nowrap;">From Procrastination to Productivity with AI</div>
+      <div class="footer-links">
+        <a href="#" onclick="openCiteMachine(event)"><i class="ti ti-blockquote"></i> Cite Machine</a>
+        <a href="#" onclick="openSoundscapes(event)"><i class="ti ti-device-audio-tape"></i> Lofi Chill</a>
+        <a href="#" onclick="openResearchTips(event)"><i class="ti ti-search"></i> Research Tips</a>
+        <a href="#" onclick="openTerms(event)"><i class="ti ti-file-text"></i> Terms</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Footer Modal Drawer -->
+  <div class="modal-overlay" id="footer-modal" onclick="closeFooterModal(event)">
+    <div class="modal-card" id="footer-modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeFooterModal(event)" aria-label="Close modal"><i class="ti ti-x"></i></button>
+      <div id="footer-modal-content"></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="script_v1.js"></script>
+</body>
+</html>
